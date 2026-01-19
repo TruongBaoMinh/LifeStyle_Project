@@ -1,0 +1,7 @@
+{
+  "name": "Lifestyle AI Wizard",
+  "description": "A professional, step-based wizard for generating high-quality lifestyle content including characters, lifestyle scenes, detail shots, and AI video transitions.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

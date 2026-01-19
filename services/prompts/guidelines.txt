@@ -1,0 +1,4 @@
+Focus on high-end luxury aesthetics.
+Pay attention to lighting (volumetric, studio, cinematic), texture (8k, detailed, realistic), and composition.
+Keep the output concise but rich in visual descriptors.
+Return ONLY the prompt text. Do not include introductory text like "Here is a prompt:".
