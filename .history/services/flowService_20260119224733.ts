@@ -1,5 +1,5 @@
 
-const PROJECT_ID = "18a6fd06-98a7-47be-9ce3-5a45086e23bb";
+const PROJECT_ID = "5832eda9-41b4-437c-bb6d-1965e0ead7e2";
 const API_URL = `https://aisandbox-pa.googleapis.com/v1/projects/${PROJECT_ID}/flowMedia:batchGenerateImages`;
 const UPLOAD_URL = "https://aisandbox-pa.googleapis.com/v1:uploadUserImage";
 
