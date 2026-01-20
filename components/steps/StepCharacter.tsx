@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { StepId } from '../../types';
 import { generatePrompt } from '../../services/openAIService';
-import { getCaptchaToken } from '../../services/reCaptchaService';
 import { generateFlow, uploadUserImage } from '../../services/flowService';
 import { fileToBase64 } from '../../utils/imageUtils';
 
@@ -68,10 +67,8 @@ const StepCharacter: React.FC<StepCharacterProps> = ({
       setLoading(true);
       try {
         const combinedPrompt = `${sharedPrompt}\n\n${data.prompt}`;
-        const captchaData = await getCaptchaToken();
-        if (!captchaData?.token) throw new Error("Failed to get captcha token");
-
-        const flowResult = await generateFlow(combinedPrompt, captchaData.token, accessToken);
+        
+        const flowResult = await generateFlow(combinedPrompt, accessToken);
         console.log("Flow Result:", flowResult);
 
         if (flowResult?.media?.[0]?.image?.generatedImage?.fifeUrl) {
@@ -93,15 +90,12 @@ const StepCharacter: React.FC<StepCharacterProps> = ({
       setVariations(prev => prev.map(v => ({ ...v, loading: true })));
 
       try {
-        const captchaData = await getCaptchaToken();
-        if (!captchaData?.token) throw new Error("Failed to get captcha token");
-
         // Execute in parallel
         await Promise.all(newVariations.map(async (variation, index) => {
           if (!variation.prompt) return;
           try {
             const combinedPrompt = `${sharedPrompt}\n\n${variation.prompt}`;
-            const flowResult = await generateFlow(combinedPrompt, captchaData.token, accessToken);
+            const flowResult = await generateFlow(combinedPrompt, accessToken);
             if (flowResult?.media?.[0]?.image?.generatedImage?.fifeUrl) {
               newVariations[index].image = flowResult.media[0].image.generatedImage.fifeUrl;
             }
@@ -121,10 +115,10 @@ const StepCharacter: React.FC<StepCharacterProps> = ({
     }
   };
 
-  const handleDownload = async (imageUrl: string) => {
-    if (!imageUrl) return;
+  const handleDownload = async () => {
+    if (!data.image) return;
     try {
-      const response = await fetch(imageUrl);
+      const response = await fetch(data.image);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -136,12 +130,8 @@ const StepCharacter: React.FC<StepCharacterProps> = ({
       window.URL.revokeObjectURL(url);
     } catch (e) {
       console.error("Download failed:", e);
-      window.open(imageUrl, '_blank');
+      window.open(data.image, '_blank');
     }
-  };
-
-  const handleSelectVariation = (variation: { prompt: string; image?: string }) => {
-    updateData({ prompt: variation.prompt, image: variation.image });
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,6 +147,7 @@ const StepCharacter: React.FC<StepCharacterProps> = ({
     try {
       setLoading(true);
       const base64String = await fileToBase64(file);
+      // Remove header to get raw bytes
       const rawBytes = base64String.split(',')[1];
 
       console.log("Uploading reference image...");
@@ -312,7 +303,7 @@ const StepCharacter: React.FC<StepCharacterProps> = ({
                       <i className="fa-solid fa-expand"></i>
                     </button>
                     <button
-                      onClick={() => handleDownload(data.image!)}
+                      onClick={handleDownload}
                       className="w-10 h-10 rounded-full bg-white/20 hover:bg-white text-white hover:text-indigo-600 backdrop-blur-md flex items-center justify-center transition-all shadow-lg transform hover:scale-110"
                       title="Download Image"
                     >
@@ -388,7 +379,9 @@ const StepCharacter: React.FC<StepCharacterProps> = ({
 
                 <div className="md:col-span-1 flex justify-center">
                   <button
-                    onClick={() => handleSelectVariation(v)}
+                    onClick={() => {
+                       updateData({ prompt: v.prompt, image: v.image });
+                    }}
                     disabled={!v.image}
                     title="Select this variation"
                     className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${v.image && data.image === v.image

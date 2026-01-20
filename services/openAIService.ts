@@ -1,10 +1,7 @@
 import OpenAI from "openai";
 
-// Define apiKey to avoid crash if env var is missing during dev
-const apiKey = process.env.OPENAI_API_KEY || "dummy_key_for_dev_interface";
-
 const client = new OpenAI({
-    apiKey: apiKey,
+    apiKey: process.env.OPENAI_API_KEY,
     dangerouslyAllowBrowser: true
 });
 

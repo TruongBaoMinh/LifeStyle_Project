@@ -1,14 +1,22 @@
+import { getCaptchaToken } from "./reCaptchaService";
 
-const PROJECT_ID = "18a6fd06-98a7-47be-9ce3-5a45086e23bb";
+const PROJECT_ID = "5832eda9-41b4-437c-bb6d-1965e0ead7e2";
 const API_URL = `https://aisandbox-pa.googleapis.com/v1/projects/${PROJECT_ID}/flowMedia:batchGenerateImages`;
 const UPLOAD_URL = "https://aisandbox-pa.googleapis.com/v1:uploadUserImage";
 
 // WARNING: This token will expire. It should ideally be passed in or fetched dynamically.
 const HARDCODED_AUTH_TOKEN = "";
 
-export const generateFlow = async (prompt: string, recaptchaToken: string , accessToken : string ) => {
+export const generateFlow = async (prompt: string, accessToken: string) => {
     const sessionId = `;${Date.now()}`;
-    
+
+    const captchaData = await getCaptchaToken();
+    const recaptchaToken = captchaData?.token;
+
+    if (!recaptchaToken) {
+        throw new Error("Failed to retrieve reCaptcha token");
+    }
+
     const payload = {
         clientContext: {
             recaptchaToken: recaptchaToken,
@@ -64,7 +72,7 @@ export const generateFlow = async (prompt: string, recaptchaToken: string , acce
 
 export const uploadUserImage = async (rawImageBytes: string, accessToken: string, mimeType: string = "image/jpeg") => {
     const sessionId = `;${Date.now()}`;
-    
+
     const payload = {
         imageInput: {
             rawImageBytes: rawImageBytes,
