@@ -12,16 +12,20 @@ export interface AppState {
   confirmedSteps: Set<StepId>;
   webhookUrl: string;
   accessToken: string;
+  geminiApiKey: string;
   sharedPrompt: string;
   data: {
     character: {
       prompt: string;
       image?: string;
+      threadCount?: number;
+      variations?: { id: number; prompt: string; image?: string; loading: boolean }[];
     };
     lifestyle1: {
       prompt: string;
       negativePrompt: string;
       productImage?: string;
+      characterImage?: string;
       outputImage?: string;
     };
     lifestyle2: {

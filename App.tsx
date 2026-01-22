@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { StepId, AppState } from './types';
-import { testOpenAIConnection } from './services/openAIService';
+import { StepId, AppState } from './core/types';
+import { testGeminiConnection } from './core/services/geminiService';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import StepCharacter from './components/steps/StepCharacter';
@@ -17,10 +17,13 @@ const INITIAL_STATE: AppState = {
   confirmedSteps: new Set(),
   webhookUrl: 'https://n8n.example.com/webhook/lifestyle-gen',
   accessToken: '',
+  geminiApiKey: '',
   sharedPrompt: 'High-end luxury aesthetic, clean composition, professional photography, 8k resolution, shot on Hasselblad.',
   data: {
     character: {
       prompt: 'A sophisticated woman in her 30s with a minimalist aesthetic, high-fashion portrait, studio lighting, soft neutral background, highly detailed skin texture.',
+      threadCount: 1,
+      variations: []
     },
     lifestyle1: {
       prompt: 'Woman holding a premium organic skincare bottle in a sunlit modern bathroom, morning light, luxury atmosphere.',
@@ -46,9 +49,13 @@ const App: React.FC = () => {
   const [isGlobalPromptExpanded, setIsGlobalPromptExpanded] = useState(true);
 
   const handleTestApi = async () => {
+    if (!state.geminiApiKey) {
+      alert("Vui lòng nhập Gemini API Key trong Settings trước!");
+      return;
+    }
     try {
-      alert("Đang gọi OpenAI...");
-      const result = await testOpenAIConnection();
+      alert("Đang gọi Gemini API...");
+      const result = await testGeminiConnection(state.geminiApiKey);
       alert("Kết quả: " + result);
     } catch (e) {
       alert("Lỗi: " + e);
@@ -97,7 +104,7 @@ const App: React.FC = () => {
             onConfirm={() => confirmStep(StepId.CHARACTER)}
             webhookUrl={state.webhookUrl}
             accessToken={state.accessToken}
-            setAccessToken={(token: string) => setState(prev => ({ ...prev, accessToken: token }))}
+            geminiApiKey={state.geminiApiKey}
           />
         );
       case StepId.LIFESTYLE_1:
@@ -110,6 +117,8 @@ const App: React.FC = () => {
             isConfirmed={state.confirmedSteps.has(StepId.LIFESTYLE_1)}
             onConfirm={() => confirmStep(StepId.LIFESTYLE_1)}
             webhookUrl={state.webhookUrl}
+            accessToken={state.accessToken}
+            geminiApiKey={state.geminiApiKey}
           />
         );
       case StepId.LIFESTYLE_2:
@@ -122,6 +131,7 @@ const App: React.FC = () => {
             isConfirmed={state.confirmedSteps.has(StepId.LIFESTYLE_2)}
             onConfirm={() => confirmStep(StepId.LIFESTYLE_2)}
             webhookUrl={state.webhookUrl}
+            geminiApiKey={state.geminiApiKey}
           />
         );
       case StepId.DETAIL:
@@ -137,6 +147,7 @@ const App: React.FC = () => {
             isConfirmed={state.confirmedSteps.has(StepId.DETAIL)}
             onConfirm={() => confirmStep(StepId.DETAIL)}
             webhookUrl={state.webhookUrl}
+            geminiApiKey={state.geminiApiKey}
           />
         );
       case StepId.VIDEO:
@@ -150,6 +161,7 @@ const App: React.FC = () => {
             isConfirmed={state.confirmedSteps.has(StepId.VIDEO)}
             onConfirm={() => confirmStep(StepId.VIDEO)}
             webhookUrl={state.webhookUrl}
+            geminiApiKey={state.geminiApiKey}
           />
         );
       default:
@@ -177,7 +189,7 @@ const App: React.FC = () => {
               onClick={handleTestApi}
               className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
             >
-              Test OpenAI API
+              Test Gemini API
             </button>
           </div>
           <GlobalPromptSection
@@ -198,6 +210,10 @@ const App: React.FC = () => {
         <SettingsPanel
           webhookUrl={state.webhookUrl}
           setWebhookUrl={(url) => setState(prev => ({ ...prev, webhookUrl: url }))}
+          accessToken={state.accessToken}
+          setAccessToken={(token) => setState(prev => ({ ...prev, accessToken: token }))}
+          geminiApiKey={state.geminiApiKey}
+          setGeminiApiKey={(key) => setState(prev => ({ ...prev, geminiApiKey: key }))}
           onClose={() => setShowSettings(false)}
         />
       )}
